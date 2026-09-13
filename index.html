@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Classroom Book Scanner</title>
+
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background: #f4f6f8;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 25px;
+    }
+
+    button {
+      width: 90%;
+      max-width: 500px;
+      padding: 25px;
+      margin: 10px;
+      font-size: 28px;
+      font-weight: bold;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+    }
+
+    .borrow {
+      background: #4caf50;
+      color: white;
+    }
+
+    .return {
+      background: #2196f3;
+      color: white;
+    }
+
+    .back {
+      background: #777;
+      color: white;
+      font-size: 20px;
+      padding: 15px;
+    }
+
+    #reader {
+      width: 100%;
+      max-width: 600px;
+      margin: 20px auto;
+    }
+
+    #message {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 25px auto;
+      max-width: 600px;
+    }
+
+    .success {
+      color: #16803c;
+    }
+
+    .warning {
+      color: #c77700;
+    }
+
+    .error {
+      color: #c62828;
+    }
+
+    .small {
+      font-size: 18px;
+      color: #555;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>📚 Classroom Book Loans</h1>
+
+  <div id="menu">
+
+    <button class="borrow" onclick="startProcess('borrow')">
+      📖 BORROW A BOOK
+    </button>
+
+    <button class="return" onclick="startProcess('return')">
+      🔄 RETURN A BOOK
+    </button>
+
+  </div>
+
+  <div id="scanner" style="display:none;">
+
+    <h2 id="instruction">
+      Scan your pupil code
+    </h2>
+
+    <div id="reader"></div>
+
+    <p class="small">
+      Point the camera at the barcode.
+    </p>
+
+    <button class="back" onclick="stopScanner()">
+      ← Cancel
+    </button>
+
+  </div>
+
+  <div id="message"></div>
+
+
+<script>
+
+let scanner = null;
+let action = null;
+let pupilCode = null;
+let scanningPupil = false;
+let scanningBook = false;
+
+
+/* ------------------------------------------------
+   START
+------------------------------------------------ */
+
+function startProcess(selectedAction) {
+
+  action = selectedAction;
+  pupilCode = null;
+
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('scanner').style.display = 'block';
+
+  document.getElementById('instruction').innerText =
+    '👤 Scan your pupil code';
+
+  scanningPupil = true;
+  scanningBook = false;
+
+  startScanner();
+}
+
+
+/* ------------------------------------------------
+   CAMERA SCANNER
+------------------------------------------------ */
+
+function startScanner() {
+
+  if (scanner) {
+    try {
+      scanner.clear();
+    } catch(e) {}
+  }
+
+  scanner = new Html5Qrcode("reader");
+
+  scanner.start(
+
+    { facingMode: "environment" },
+
+    {
+      fps: 10,
+
+      qrbox: {
+        width: 280,
+        height: 180
+      },
+
+      formatsToSupport: [
+
+        Html5QrcodeSupportedFormats.QR_CODE,
+
+        Html5QrcodeSupportedFormats.EAN_13,
+
+        Html5QrcodeSupportedFormats.EAN_8,
+
+        Html5QrcodeSupportedFormats.CODE_128
+
+      ]
+    },
+
+    onScanSuccess,
+
+    function(errorMessage) {
+      // Ignore normal scanning errors
+    }
+
+  ).catch(function(error) {
+
+    showError(
+      'I could not start the camera. ' +
+      'Please make sure Chrome has permission to use the camera.'
+    );
+
+  });
+}
+
+
+/* ------------------------------------------------
+   SCAN RESULT
+------------------------------------------------ */
+
+function onScanSuccess(decodedText) {
+
+  /* PUPIL CODE */
+
+  if (scanningPupil) {
+
+    pupilCode = decodedText.trim();
+
+    scanningPupil = false;
+
+    stopCurrentScanner();
+
+    document.getElementById('instruction').innerText =
+      '📚 Now scan the book';
+
+    scanningBook = true;
+
+    setTimeout(function() {
+      startScanner();
+    }, 500);
+
+    return;
+  }
+
+
+  /* BOOK */
+
+  if (scanningBook) {
+
+    const isbn = decodedText.trim();
+
+    scanningBook = false;
+
+    stopCurrentScanner();
+
+    document.getElementById('instruction').innerText =
+      '⏳ Checking book...';
+
+    sendLoan(action, pupilCode, isbn);
+  }
+}
+
+
+/* ------------------------------------------------
+   SEND TO GOOGLE APPS SCRIPT
+------------------------------------------------ */
+
+function sendLoan(action, pupilCode, isbn) {
+
+  /*
+    This will be connected to your Google Apps Script
+    in the next step.
+  */
+
+  showError(
+    'Scanner working! The Google Sheets connection ' +
+    'still needs to be connected.'
+  );
+}
+
+
+/* ------------------------------------------------
+   DISPLAY RESULT
+------------------------------------------------ */
+
+function showResult(result) {
+
+  document.getElementById('scanner').style.display = 'none';
+
+  const message = document.getElementById('message');
+
+  if (result.success) {
+
+    if (result.type === 'borrow') {
+
+      message.innerHTML =
+        '<div class="success">' +
+        '✅ BOOK BORROWED<br><br>' +
+        '<strong>' +
+        escapeHtml(result.title) +
+        '</strong>' +
+        '<br><br>Borrowed by ' +
+        escapeHtml(result.pupil) +
+        '</div>';
+
+    } else {
+
+      message.innerHTML =
+        '<div class="success">' +
+        '✅ BOOK RETURNED<br><br>' +
+        '<strong>' +
+        escapeHtml(result.title) +
+        '</strong>' +
+        '<br><br>Returned by ' +
+        escapeHtml(result.pupil) +
+        '</div>';
+    }
+
+  } else {
+
+    message.innerHTML =
+      '<div class="warning">' +
+      '⚠️ ' +
+      escapeHtml(result.message) +
+      '<br><br><strong>' +
+      escapeHtml(result.title || '') +
+      '</strong>' +
+      '</div>';
+  }
+
+  setTimeout(resetApp, 3000);
+}
+
+
+/* ------------------------------------------------
+   ERRORS
+------------------------------------------------ */
+
+function showError(error) {
+
+  document.getElementById('scanner').style.display = 'none';
+
+  document.getElementById('message').innerHTML =
+    '<div class="error">❌ ' +
+    escapeHtml(error.message || error) +
+    '</div>';
+
+  setTimeout(resetApp, 4000);
+}
+
+
+/* ------------------------------------------------
+   STOP CAMERA
+------------------------------------------------ */
+
+function stopCurrentScanner() {
+
+  if (scanner) {
+
+    try {
+
+      scanner.stop().then(function() {
+
+        scanner.clear();
+
+      }).catch(function() {
+
+        try {
+          scanner.clear();
+        } catch(e) {}
+
+      });
+
+    } catch(e) {}
+  }
+}
+
+
+function stopScanner() {
+
+  stopCurrentScanner();
+
+  resetApp();
+}
+
+
+/* ------------------------------------------------
+   RESET
+------------------------------------------------ */
+
+function resetApp() {
+
+  stopCurrentScanner();
+
+  action = null;
+  pupilCode = null;
+
+  scanningPupil = false;
+  scanningBook = false;
+
+  document.getElementById('scanner').style.display = 'none';
+
+  document.getElementById('message').innerHTML = '';
+
+  document.getElementById('menu').style.display = 'block';
+}
+
+
+/* ------------------------------------------------
+   SECURITY / DISPLAY HELPER
+------------------------------------------------ */
+
+function escapeHtml(text) {
+
+  const div = document.createElement('div');
+
+  div.textContent = text || '';
+
+  return div.innerHTML;
+}
+
+</script>
+
+</body>
+</html>
