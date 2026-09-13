@@ -257,19 +257,49 @@ function onScanSuccess(decodedText) {
 /* ------------------------------------------------
    SEND TO GOOGLE APPS SCRIPT
 ------------------------------------------------ */
-
 function sendLoan(action, pupilCode, isbn) {
 
-  /*
-    This will be connected to your Google Apps Script
-    in the next step.
-  */
+  const scriptUrl =
+    'https://script.google.com/macros/s/AKfycbzzCXAdTSiYAs6vfZS8d7sHeTtEHfDI4XsM8DAeoQL_5nu9sqcz9Ak-4CICI0QRuHzk4w/exec';
 
-  showError(
-    'Scanner working! The Google Sheets connection ' +
-    'still needs to be connected.'
-  );
+  const callbackName =
+    'loanCallback_' + Date.now();
+
+  window[callbackName] = function(result) {
+
+    delete window[callbackName];
+
+    showResult(result);
+  };
+
+  const script = document.createElement('script');
+
+  const params = new URLSearchParams({
+
+    action: action,
+
+    pupilCode: pupilCode,
+
+    isbn: isbn,
+
+    callback: callbackName
+
+  });
+
+  script.src = scriptUrl + '?' + params.toString();
+
+  script.onerror = function() {
+
+    delete window[callbackName];
+
+    showError(
+      'I could not connect to the classroom book system.'
+    );
+  };
+
+  document.body.appendChild(script);
 }
+
 
 
 /* ------------------------------------------------
