@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Classroom Book Scanner</title>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
 
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <title>Classroom Book Library</title>
+
+  <script src="https://unpkg.com/html5-qrcode"
+          type="text/javascript"></script>
 
   <style>
+
     body {
       font-family: Arial, sans-serif;
       text-align: center;
@@ -17,20 +22,34 @@
       background: #f4f6f8;
     }
 
+    #home {
+      max-width: 650px;
+      margin: auto;
+    }
+
+    .logo {
+      width: 90%;
+      max-width: 500px;
+      max-height: 180px;
+      object-fit: contain;
+      margin: 10px auto 20px;
+    }
+
     h1 {
-      font-size: 32px;
-      margin-bottom: 25px;
+      font-size: 34px;
+      margin: 10px 0 30px;
+      color: #333;
     }
 
     button {
       width: 90%;
-      max-width: 500px;
-      padding: 25px;
+      max-width: 550px;
+      padding: 28px;
       margin: 10px;
       font-size: 28px;
       font-weight: bold;
       border: none;
-      border-radius: 15px;
+      border-radius: 18px;
       cursor: pointer;
     }
 
@@ -41,6 +60,11 @@
 
     .return {
       background: #2196f3;
+      color: white;
+    }
+
+    .mybooks {
+      background: #8e44ad;
       color: white;
     }
 
@@ -80,87 +104,210 @@
       font-size: 18px;
       color: #555;
     }
+
+    .book-list {
+      text-align: left;
+      max-width: 550px;
+      margin: 20px auto;
+    }
+
+    .book {
+      background: white;
+      border-radius: 15px;
+      padding: 18px;
+      margin: 12px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+    }
+
+    .book-title {
+      font-size: 23px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .book-isbn {
+      font-size: 14px;
+      color: #777;
+      margin-top: 6px;
+    }
+
   </style>
+
 </head>
+
 
 <body>
 
-  <h1>📚 Classroom Book Loans</h1>
 
-  <div id="menu">
+<!-- =========================
+     HOME
+========================= -->
 
-    <button class="borrow" onclick="startProcess('borrow')">
-      📖 BORROW A BOOK
-    </button>
+<div id="home">
 
-    <button class="return" onclick="startProcess('return')">
-      🔄 RETURN A BOOK
-    </button>
+  <img
+    class="logo"
+    src="https://www.wellesbourneceprimary.co.uk/wp-content/uploads/2021/09/cropped-wceps-logo.png"
+    alt="School logo">
 
+  <h1>📚 Classroom Book Library</h1>
+
+  <button
+    class="borrow"
+    onclick="startProcess('borrow')">
+    📖 BORROW A BOOK
+  </button>
+
+  <button
+    class="return"
+    onclick="startProcess('return')">
+    ↩️ RETURN A BOOK
+  </button>
+
+  <button
+    class="mybooks"
+    onclick="startMyBooks()">
+    📚 MY BOOKS
+  </button>
+
+</div>
+
+
+<!-- =========================
+     SCANNER
+========================= -->
+
+<div id="scanner" style="display:none;">
+
+  <h2 id="instruction">
+    Scan your pupil code
+  </h2>
+
+  <div id="reader"></div>
+
+  <p class="small">
+    Point the camera at the barcode.
+  </p>
+
+  <button
+    class="back"
+    onclick="stopScanner()">
+    ← Cancel
+  </button>
+
+</div>
+
+
+<!-- =========================
+     MY BOOKS
+========================= -->
+
+<div id="myBooksScreen" style="display:none;">
+
+  <h2 id="myBooksTitle">
+    📚 My Books
+  </h2>
+
+  <div id="bookList"
+       class="book-list">
   </div>
 
-  <div id="scanner" style="display:none;">
+  <button
+    class="back"
+    onclick="resetApp()">
+    ← Back
+  </button>
 
-    <h2 id="instruction">
-      Scan your pupil code
-    </h2>
+</div>
 
-    <div id="reader"></div>
 
-    <p class="small">
-      Point the camera at the barcode.
-    </p>
-
-    <button class="back" onclick="stopScanner()">
-      ← Cancel
-    </button>
-
-  </div>
-
-  <div id="message"></div>
+<div id="message"></div>
 
 
 <script>
 
+
 let scanner = null;
+
 let action = null;
+
 let pupilCode = null;
+
 let scanningPupil = false;
+
 let scanningBook = false;
 
+let scanningMyBooks = false;
 
-/* ------------------------------------------------
-   START
------------------------------------------------- */
+
+/* =================================================
+   BORROW / RETURN
+================================================= */
 
 function startProcess(selectedAction) {
 
   action = selectedAction;
+
   pupilCode = null;
 
-  document.getElementById('menu').style.display = 'none';
+  document.getElementById('home').style.display = 'none';
+
   document.getElementById('scanner').style.display = 'block';
+
+  document.getElementById('myBooksScreen').style.display = 'none';
 
   document.getElementById('instruction').innerText =
     '👤 Scan your pupil code';
 
   scanningPupil = true;
+
   scanningBook = false;
+
+  scanningMyBooks = false;
 
   startScanner();
 }
 
 
-/* ------------------------------------------------
-   CAMERA SCANNER
------------------------------------------------- */
+/* =================================================
+   MY BOOKS
+================================================= */
+
+function startMyBooks() {
+
+  pupilCode = null;
+
+  document.getElementById('home').style.display = 'none';
+
+  document.getElementById('scanner').style.display = 'block';
+
+  document.getElementById('myBooksScreen').style.display = 'none';
+
+  document.getElementById('instruction').innerText =
+    '👤 Scan your pupil code';
+
+  scanningPupil = false;
+
+  scanningBook = false;
+
+  scanningMyBooks = true;
+
+  startScanner();
+}
+
+
+/* =================================================
+   CAMERA
+================================================= */
 
 function startScanner() {
 
   if (scanner) {
+
     try {
       scanner.clear();
     } catch(e) {}
+
   }
 
   scanner = new Html5Qrcode("reader");
@@ -207,13 +354,36 @@ function startScanner() {
 }
 
 
-/* ------------------------------------------------
+/* =================================================
    SCAN RESULT
------------------------------------------------- */
+================================================= */
 
 function onScanSuccess(decodedText) {
 
-  /* PUPIL CODE */
+  /* -------------------------
+     MY BOOKS
+  ------------------------- */
+
+  if (scanningMyBooks) {
+
+    pupilCode = decodedText.trim();
+
+    scanningMyBooks = false;
+
+    stopCurrentScanner();
+
+    document.getElementById('instruction').innerText =
+      '⏳ Finding your books...';
+
+    sendMyBooks(pupilCode);
+
+    return;
+  }
+
+
+  /* -------------------------
+     PUPIL
+  ------------------------- */
 
   if (scanningPupil) {
 
@@ -229,14 +399,18 @@ function onScanSuccess(decodedText) {
     scanningBook = true;
 
     setTimeout(function() {
+
       startScanner();
+
     }, 500);
 
     return;
   }
 
 
-  /* BOOK */
+  /* -------------------------
+     BOOK
+  ------------------------- */
 
   if (scanningBook) {
 
@@ -251,12 +425,14 @@ function onScanSuccess(decodedText) {
 
     sendLoan(action, pupilCode, isbn);
   }
+
 }
 
 
-/* ------------------------------------------------
-   SEND TO GOOGLE APPS SCRIPT
------------------------------------------------- */
+/* =================================================
+   SEND BORROW / RETURN
+================================================= */
+
 function sendLoan(action, pupilCode, isbn) {
 
   const scriptUrl =
@@ -270,23 +446,31 @@ function sendLoan(action, pupilCode, isbn) {
     delete window[callbackName];
 
     showResult(result);
+
   };
 
-  const script = document.createElement('script');
 
-  const params = new URLSearchParams({
+  const script =
+    document.createElement('script');
 
-    action: action,
 
-    pupilCode: pupilCode,
+  const params =
+    new URLSearchParams({
 
-    isbn: isbn,
+      action: action,
 
-    callback: callbackName
+      pupilCode: pupilCode,
 
-  });
+      isbn: isbn,
 
-  script.src = scriptUrl + '?' + params.toString();
+      callback: callbackName
+
+    });
+
+
+  script.src =
+    scriptUrl + '?' + params.toString();
+
 
   script.onerror = function() {
 
@@ -295,86 +479,282 @@ function sendLoan(action, pupilCode, isbn) {
     showError(
       'I could not connect to the classroom book system.'
     );
+
   };
 
+
   document.body.appendChild(script);
+
 }
 
 
+/* =================================================
+   SEND MY BOOKS REQUEST
+================================================= */
 
-/* ------------------------------------------------
-   DISPLAY RESULT
------------------------------------------------- */
+function sendMyBooks(pupilCode) {
+
+  const scriptUrl =
+    'https://script.google.com/macros/s/AKfycbzzCXAdTSiYAs6vfZS8d7sHeTtEHfDI4XsM8DAeoQL_5nu9sqcz9Ak-4CICI0QRuHzk4w/exec';
+
+  const callbackName =
+    'myBooksCallback_' + Date.now();
+
+
+  window[callbackName] = function(result) {
+
+    delete window[callbackName];
+
+    showMyBooks(result);
+
+  };
+
+
+  const script =
+    document.createElement('script');
+
+
+  const params =
+    new URLSearchParams({
+
+      action: 'myBooks',
+
+      pupilCode: pupilCode,
+
+      callback: callbackName
+
+    });
+
+
+  script.src =
+    scriptUrl + '?' + params.toString();
+
+
+  script.onerror = function() {
+
+    delete window[callbackName];
+
+    showError(
+      'I could not connect to the classroom book system.'
+    );
+
+  };
+
+
+  document.body.appendChild(script);
+
+}
+
+
+/* =================================================
+   DISPLAY LOAN RESULT
+================================================= */
 
 function showResult(result) {
 
-  document.getElementById('scanner').style.display = 'none';
+  document.getElementById('scanner').style.display =
+    'none';
 
-  const message = document.getElementById('message');
+  const message =
+    document.getElementById('message');
+
 
   if (result.success) {
 
     if (result.type === 'borrow') {
 
       message.innerHTML =
+
         '<div class="success">' +
+
         '✅ BOOK BORROWED<br><br>' +
+
         '<strong>' +
+
         escapeHtml(result.title) +
+
         '</strong>' +
+
         '<br><br>Borrowed by ' +
+
         escapeHtml(result.pupil) +
+
         '</div>';
 
-    } else {
-
-      message.innerHTML =
-        '<div class="success">' +
-        '✅ BOOK RETURNED<br><br>' +
-        '<strong>' +
-        escapeHtml(result.title) +
-        '</strong>' +
-        '<br><br>Returned by ' +
-        escapeHtml(result.pupil) +
-        '</div>';
     }
 
-  } else {
+    else {
 
-    message.innerHTML =
-      '<div class="warning">' +
-      '⚠️ ' +
-      escapeHtml(result.message) +
-      '<br><br><strong>' +
-      escapeHtml(result.title || '') +
-      '</strong>' +
-      '</div>';
+      message.innerHTML =
+
+        '<div class="success">' +
+
+        '✅ BOOK RETURNED<br><br>' +
+
+        '<strong>' +
+
+        escapeHtml(result.title) +
+
+        '</strong>' +
+
+        '<br><br>Returned by ' +
+
+        escapeHtml(result.pupil) +
+
+        '</div>';
+
+    }
+
   }
 
+  else {
+
+    message.innerHTML =
+
+      '<div class="warning">' +
+
+      '⚠️ ' +
+
+      escapeHtml(result.message) +
+
+      '<br><br><strong>' +
+
+      escapeHtml(result.title || '') +
+
+      '</strong>' +
+
+      '</div>';
+
+  }
+
+
   setTimeout(resetApp, 3000);
+
 }
 
 
-/* ------------------------------------------------
+/* =================================================
+   DISPLAY MY BOOKS
+================================================= */
+
+function showMyBooks(result) {
+
+  document.getElementById('scanner').style.display =
+    'none';
+
+
+  if (!result.success) {
+
+    showError(result.message);
+
+    return;
+
+  }
+
+
+  document.getElementById('myBooksScreen').style.display =
+    'block';
+
+
+  document.getElementById('myBooksTitle').innerText =
+    '📚 ' + result.pupil + "'s Books";
+
+
+  const list =
+    document.getElementById('bookList');
+
+
+  if (!result.books || result.books.length === 0) {
+
+    list.innerHTML =
+
+      '<div class="success">' +
+
+      '🎉 You have no books out at the moment!' +
+
+      '</div>';
+
+    return;
+
+  }
+
+
+  let html =
+
+    '<p><strong>You currently have ' +
+
+    result.books.length +
+
+    (result.books.length === 1
+      ? ' book'
+      : ' books') +
+
+    ' out.</strong></p>';
+
+
+  result.books.forEach(function(book) {
+
+    html +=
+
+      '<div class="book">' +
+
+      '<div class="book-title">' +
+
+      '📖 ' +
+
+      escapeHtml(book.title) +
+
+      '</div>' +
+
+      '<div class="book-isbn">' +
+
+      'ISBN: ' +
+
+      escapeHtml(book.isbn) +
+
+      '</div>' +
+
+      '</div>';
+
+  });
+
+
+  list.innerHTML = html;
+
+}
+
+
+/* =================================================
    ERRORS
------------------------------------------------- */
+================================================= */
 
 function showError(error) {
 
-  document.getElementById('scanner').style.display = 'none';
+  document.getElementById('scanner').style.display =
+    'none';
+
+
+  document.getElementById('myBooksScreen').style.display =
+    'none';
+
 
   document.getElementById('message').innerHTML =
+
     '<div class="error">❌ ' +
+
     escapeHtml(error.message || error) +
+
     '</div>';
 
+
   setTimeout(resetApp, 4000);
+
 }
 
 
-/* ------------------------------------------------
+/* =================================================
    STOP CAMERA
------------------------------------------------- */
+================================================= */
 
 function stopCurrentScanner() {
 
@@ -394,8 +774,12 @@ function stopCurrentScanner() {
 
       });
 
-    } catch(e) {}
+    }
+
+    catch(e) {}
+
   }
+
 }
 
 
@@ -404,43 +788,63 @@ function stopScanner() {
   stopCurrentScanner();
 
   resetApp();
+
 }
 
 
-/* ------------------------------------------------
+/* =================================================
    RESET
------------------------------------------------- */
+================================================= */
 
 function resetApp() {
 
   stopCurrentScanner();
 
   action = null;
+
   pupilCode = null;
 
   scanningPupil = false;
+
   scanningBook = false;
 
-  document.getElementById('scanner').style.display = 'none';
+  scanningMyBooks = false;
 
-  document.getElementById('message').innerHTML = '';
 
-  document.getElementById('menu').style.display = 'block';
+  document.getElementById('scanner').style.display =
+    'none';
+
+
+  document.getElementById('myBooksScreen').style.display =
+    'none';
+
+
+  document.getElementById('message').innerHTML =
+    '';
+
+
+  document.getElementById('home').style.display =
+    'block';
+
 }
 
 
-/* ------------------------------------------------
-   SECURITY / DISPLAY HELPER
------------------------------------------------- */
+/* =================================================
+   HTML SAFETY
+================================================= */
 
 function escapeHtml(text) {
 
-  const div = document.createElement('div');
+  const div =
+    document.createElement('div');
 
-  div.textContent = text || '';
+  div.textContent =
+    text || '';
 
   return div.innerHTML;
+
 }
+
 
 </script>
 
