@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-
 <html>
 <head>
 
   <meta charset="UTF-8">
 
-<meta name="viewport"
-     content="width=device-width, initial-scale=1">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
 
   <title>Classroom Book Library</title>
 
@@ -76,7 +75,9 @@
       padding: 15px;
     }
 
-    /* Scanner deliberately left at original size */
+    /* =========================
+       ORIGINAL SCANNER SIZE
+    ========================= */
 
     #reader {
       width: 100%;
@@ -106,6 +107,7 @@
     .small {
       font-size: 18px;
       color: #555;
+      margin: 8px auto;
     }
 
     /* =========================
@@ -150,6 +152,10 @@
       margin: 8px 0 0;
     }
 
+    /* =========================
+       MY BOOKS
+    ========================= */
+
     .book-list {
       text-align: left;
       max-width: 550px;
@@ -188,29 +194,33 @@
 
 <div id="home">
 
-<img
- class="logo"
- src="https://www.wellesbourneceprimary.co.uk/wp-content/uploads/2021/09/cropped-wceps-logo.png"
- alt="School logo">
+  <img
+    class="logo"
+    src="https://www.wellesbourneceprimary.co.uk/wp-content/uploads/2021/09/cropped-wceps-logo.png"
+    alt="School logo">
 
   <h1>📚 Classroom Book Library</h1>
 
-<button
- class="borrow"
- onclick="startProcess('borrow')">
-📖 BORROW A BOOK </button>
+  <button
+    class="borrow"
+    onclick="startProcess('borrow')">
+    📖 BORROW A BOOK
+  </button>
 
-<button
- class="return"
- onclick="startProcess('return')">
-↩️ RETURN A BOOK </button>
+  <button
+    class="return"
+    onclick="startProcess('return')">
+    ↩️ RETURN A BOOK
+  </button>
 
-<button
- class="mybooks"
- onclick="startMyBooks()">
-📚 MY BOOKS </button>
+  <button
+    class="mybooks"
+    onclick="startMyBooks()">
+    📚 MY BOOKS
+  </button>
 
 </div>
+
 
 <!-- =========================
      SCANNER
@@ -224,45 +234,47 @@
 
   <div id="reader"></div>
 
+
   <!-- =========================
        MANUAL ISBN ENTRY
   ========================= -->
 
   <div id="manualIsbn">
 
-```
-<p>
-  Or enter the ISBN manually:
-</p>
+    <p>
+      Or enter the ISBN manually:
+    </p>
 
-<input
-  id="isbnInput"
-  type="text"
-  inputmode="numeric"
-  autocomplete="off"
-  placeholder="Enter ISBN">
+    <input
+      id="isbnInput"
+      type="text"
+      inputmode="numeric"
+      autocomplete="off"
+      placeholder="Enter ISBN">
 
-<br>
+    <br>
 
-<button
-  id="isbnButton"
-  onclick="useManualIsbn()">
-  📚 USE ISBN
-</button>
-```
+    <button
+      id="isbnButton"
+      onclick="useManualIsbn()">
+      📚 USE ISBN
+    </button>
 
   </div>
+
 
   <p class="small">
     Scan the book barcode or enter the ISBN below.
   </p>
 
-<button
- class="back"
- onclick="stopScanner()">
-← Cancel </button>
+  <button
+    class="back"
+    onclick="stopScanner()">
+    ← Cancel
+  </button>
 
 </div>
+
 
 <!-- =========================
      MY BOOKS
@@ -278,28 +290,25 @@
        class="book-list">
   </div>
 
-<button
- class="back"
- onclick="resetApp()">
-← Back </button>
+  <button
+    class="back"
+    onclick="resetApp()">
+    ← Back
+  </button>
 
 </div>
 
+
 <div id="message"></div>
+
 
 <script>
 
-
 let scanner = null;
-
 let action = null;
-
 let pupilCode = null;
-
 let scanningPupil = false;
-
 let scanningBook = false;
-
 let scanningMyBooks = false;
 
 
@@ -310,7 +319,6 @@ let scanningMyBooks = false;
 function startProcess(selectedAction) {
 
   action = selectedAction;
-
   pupilCode = null;
 
   document.getElementById('home').style.display = 'none';
@@ -327,9 +335,7 @@ function startProcess(selectedAction) {
     '👤 Scan your pupil code';
 
   scanningPupil = true;
-
   scanningBook = false;
-
   scanningMyBooks = false;
 
   startScanner();
@@ -356,9 +362,7 @@ function startMyBooks() {
     '👤 Scan your pupil code';
 
   scanningPupil = false;
-
   scanningBook = false;
-
   scanningMyBooks = true;
 
   startScanner();
@@ -467,8 +471,6 @@ function onScanSuccess(decodedText) {
 
     scanningBook = true;
 
-    /* Show manual ISBN option */
-
     document.getElementById('manualIsbn').style.display =
       'block';
 
@@ -537,7 +539,6 @@ function useManualIsbn() {
 
 /* =================================================
    PROCESS BOOK
-   Used by both scanner and manual ISBN
 ================================================= */
 
 function processBook(isbn) {
@@ -581,28 +582,21 @@ function sendLoan(action, pupilCode, isbn) {
 
   };
 
-
   const script =
     document.createElement('script');
-
 
   const params =
     new URLSearchParams({
 
       action: action,
-
       pupilCode: pupilCode,
-
       isbn: isbn,
-
       callback: callbackName
 
     });
 
-
   script.src =
     scriptUrl + '?' + params.toString();
-
 
   script.onerror = function() {
 
@@ -613,7 +607,6 @@ function sendLoan(action, pupilCode, isbn) {
     );
 
   };
-
 
   document.body.appendChild(script);
 
@@ -632,7 +625,6 @@ function sendMyBooks(pupilCode) {
   const callbackName =
     'myBooksCallback_' + Date.now();
 
-
   window[callbackName] = function(result) {
 
     delete window[callbackName];
@@ -641,26 +633,20 @@ function sendMyBooks(pupilCode) {
 
   };
 
-
   const script =
     document.createElement('script');
-
 
   const params =
     new URLSearchParams({
 
       action: 'myBooks',
-
       pupilCode: pupilCode,
-
       callback: callbackName
 
     });
 
-
   script.src =
     scriptUrl + '?' + params.toString();
-
 
   script.onerror = function() {
 
@@ -671,7 +657,6 @@ function sendMyBooks(pupilCode) {
     );
 
   };
-
 
   document.body.appendChild(script);
 
@@ -689,7 +674,6 @@ function showResult(result) {
 
   const message =
     document.getElementById('message');
-
 
   if (result.success) {
 
@@ -759,7 +743,6 @@ function showResult(result) {
 
   }
 
-
   setTimeout(resetApp, 3000);
 
 }
@@ -774,7 +757,6 @@ function showMyBooks(result) {
   document.getElementById('scanner').style.display =
     'none';
 
-
   if (!result.success) {
 
     showError(result.message);
@@ -783,18 +765,14 @@ function showMyBooks(result) {
 
   }
 
-
   document.getElementById('myBooksScreen').style.display =
     'block';
-
 
   document.getElementById('myBooksTitle').innerText =
     '📚 ' + result.pupil + "'s Books";
 
-
   const list =
     document.getElementById('bookList');
-
 
   if (!result.books || result.books.length === 0) {
 
@@ -810,7 +788,6 @@ function showMyBooks(result) {
 
   }
 
-
   let html =
 
     '<p><strong>You currently have ' +
@@ -822,7 +799,6 @@ function showMyBooks(result) {
       : ' books') +
 
     ' out.</strong></p>';
-
 
   result.books.forEach(function(book) {
 
@@ -850,7 +826,6 @@ function showMyBooks(result) {
 
   });
 
-
   list.innerHTML = html;
 
 }
@@ -865,10 +840,8 @@ function showError(error) {
   document.getElementById('scanner').style.display =
     'none';
 
-
   document.getElementById('myBooksScreen').style.display =
     'none';
-
 
   document.getElementById('message').innerHTML =
 
@@ -877,7 +850,6 @@ function showError(error) {
     escapeHtml(error.message || error) +
 
     '</div>';
-
 
   setTimeout(resetApp, 4000);
 
@@ -933,35 +905,26 @@ function resetApp() {
   stopCurrentScanner();
 
   action = null;
-
   pupilCode = null;
 
   scanningPupil = false;
-
   scanningBook = false;
-
   scanningMyBooks = false;
-
 
   document.getElementById('scanner').style.display =
     'none';
 
-
   document.getElementById('myBooksScreen').style.display =
     'none';
-
 
   document.getElementById('manualIsbn').style.display =
     'none';
 
-
   document.getElementById('isbnInput').value =
     '';
 
-
   document.getElementById('message').innerHTML =
     '';
-
 
   document.getElementById('home').style.display =
     'block';
@@ -984,7 +947,6 @@ function escapeHtml(text) {
   return div.innerHTML;
 
 }
-
 
 </script>
 
