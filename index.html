@@ -105,6 +105,46 @@
       color: #555;
     }
 
+    /* =========================
+       MANUAL ISBN
+    ========================= */
+
+    #manualIsbn {
+      display: none;
+      max-width: 600px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 18px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+    }
+
+    #manualIsbn p {
+      font-size: 22px;
+      font-weight: bold;
+      margin: 5px 0 15px;
+      color: #333;
+    }
+
+    #isbnInput {
+      width: 85%;
+      max-width: 500px;
+      box-sizing: border-box;
+      padding: 18px;
+      font-size: 24px;
+      text-align: center;
+      border: 2px solid #bbb;
+      border-radius: 12px;
+    }
+
+    #isbnButton {
+      background: #ff9800;
+      color: white;
+      padding: 20px;
+      font-size: 24px;
+      margin-top: 15px;
+    }
+
     .book-list {
       text-align: left;
       max-width: 550px;
@@ -185,6 +225,33 @@
 
   <div id="reader"></div>
 
+  <!-- =========================
+       MANUAL ISBN ENTRY
+  ========================= -->
+
+  <div id="manualIsbn">
+
+    <p>
+      Or enter the ISBN manually:
+    </p>
+
+    <input
+      id="isbnInput"
+      type="text"
+      inputmode="numeric"
+      autocomplete="off"
+      placeholder="Enter ISBN">
+
+    <br>
+
+    <button
+      id="isbnButton"
+      onclick="useManualIsbn()">
+      📚 USE ISBN
+    </button>
+
+  </div>
+
   <p class="small">
     Point the camera at the barcode.
   </p>
@@ -256,6 +323,10 @@ function startProcess(selectedAction) {
 
   document.getElementById('myBooksScreen').style.display = 'none';
 
+  document.getElementById('manualIsbn').style.display = 'none';
+
+  document.getElementById('isbnInput').value = '';
+
   document.getElementById('instruction').innerText =
     '👤 Scan your pupil code';
 
@@ -282,6 +353,8 @@ function startMyBooks() {
   document.getElementById('scanner').style.display = 'block';
 
   document.getElementById('myBooksScreen').style.display = 'none';
+
+  document.getElementById('manualIsbn').style.display = 'none';
 
   document.getElementById('instruction').innerText =
     '👤 Scan your pupil code';
@@ -398,6 +471,13 @@ function onScanSuccess(decodedText) {
 
     scanningBook = true;
 
+    /* Show manual ISBN option */
+
+    document.getElementById('manualIsbn').style.display =
+      'block';
+
+    document.getElementById('isbnInput').value = '';
+
     setTimeout(function() {
 
       startScanner();
@@ -416,15 +496,71 @@ function onScanSuccess(decodedText) {
 
     const isbn = decodedText.trim();
 
-    scanningBook = false;
+    processBook(isbn);
 
-    stopCurrentScanner();
-
-    document.getElementById('instruction').innerText =
-      '⏳ Checking book...';
-
-    sendLoan(action, pupilCode, isbn);
   }
+
+}
+
+
+/* =================================================
+   MANUAL ISBN
+================================================= */
+
+function useManualIsbn() {
+
+  if (!scanningBook) {
+    return;
+  }
+
+  const input =
+    document.getElementById('isbnInput');
+
+  let isbn =
+    input.value.trim();
+
+  if (!isbn) {
+
+    alert('Please enter the ISBN number.');
+
+    input.focus();
+
+    return;
+
+  }
+
+  /* Remove spaces and hyphens */
+
+  isbn =
+    isbn.replace(/[\s-]/g, '');
+
+  processBook(isbn);
+
+}
+
+
+/* =================================================
+   PROCESS BOOK
+   Used by both scanner and manual ISBN
+================================================= */
+
+function processBook(isbn) {
+
+  if (!isbn) {
+    return;
+  }
+
+  scanningBook = false;
+
+  stopCurrentScanner();
+
+  document.getElementById('manualIsbn').style.display =
+    'none';
+
+  document.getElementById('instruction').innerText =
+    '⏳ Checking book...';
+
+  sendLoan(action, pupilCode, isbn);
 
 }
 
@@ -817,6 +953,14 @@ function resetApp() {
 
   document.getElementById('myBooksScreen').style.display =
     'none';
+
+
+  document.getElementById('manualIsbn').style.display =
+    'none';
+
+
+  document.getElementById('isbnInput').value =
+    '';
 
 
   document.getElementById('message').innerHTML =
